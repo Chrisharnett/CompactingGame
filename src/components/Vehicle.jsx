@@ -1,6 +1,4 @@
-import React from "react";
-
-const Vehicle = ({ compactness }) => {
+const Vehicle = () => {
   return <div className="vehicle">🚜</div>;
 };
 

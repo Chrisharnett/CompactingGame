@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import axios from "axios";
+import PropTypes from "prop-types";
 
 const Accelerometer = ({
   tile,
@@ -84,7 +85,7 @@ const Accelerometer = ({
         // Clear the stored values for the next aggregation period
         accelDataPoints.current = [];
       }
-    }, 80);
+    }, 1000);
 
     // Clean up intervals on component unmount
     return () => {
@@ -92,6 +93,20 @@ const Accelerometer = ({
       clearInterval(apiInterval);
     };
   }, [compactness, gps, setAccelData]);
+};
+
+Accelerometer.propTypes = {
+  tile: PropTypes.shape({
+    compactness: PropTypes.number.isRequired,
+    gps: PropTypes.shape({
+      lng: PropTypes.number,
+      lat: PropTypes.number,
+      alt: PropTypes.number,
+    }),
+  }).isRequired,
+  setAccelData: PropTypes.func.isRequired,
+  setAccelStatus: PropTypes.func.isRequired,
+  setGpsStatus: PropTypes.func.isRequired,
 };
 
 export default Accelerometer;

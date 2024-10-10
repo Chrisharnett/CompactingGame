@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Vehicle from "./Vehicle";
 import Accelerometer from "./Accelerometer";
+import PropTypes from "prop-types";
 
 const Grid = ({
   rows,
@@ -10,18 +11,20 @@ const Grid = ({
   setAccelData,
   setAccelStatus,
   setGpsStatus,
+  setProgressData,
 }) => {
   const [vehiclePosition, setVehiclePosition] = useState({ row: 0, col: 0 });
+  const [visitedTiles, setVisitedTiles] = useState(new Set());
 
   // Create initial grid based on rows and columns with additional properties
   const [grid, setGrid] = useState(
     Array.from({ length: rows }, (_, rowIndex) =>
       Array.from({ length: cols }, (_, colIndex) => ({
         compactness: Math.floor(Math.random() * 5), // Compactness value less than 5
-        color: "gray", // Initial color
+        img: "soil0.png", // Initial color
         gps: {
-          lng: -52.70983 + colIndex * (3 / 111111), // Increment longitude by 3 meters (approx.)
-          lat: 47.46556 + rowIndex * (3 / 111111), // Increment latitude by 3 meters (approx.)
+          lng: -52.71083 + colIndex * (5 / 111111), // Increment longitude by 5 meters (approx.)
+          lat: 47.46656 - rowIndex * (5 / 111111), // Increment latitude by 5 meters (approx.)
           alt: 26.25616455078125,
         },
       }))
@@ -30,21 +33,20 @@ const Grid = ({
 
   const previousTileDataRef = useRef(null);
 
-  // Update the color based on compactness
-  const getColorByCompactness = (compactness) => {
+  const getImageByCompactness = (compactness) => {
     switch (compactness) {
       case 1:
-        return "red";
+        return "soil1.png";
       case 2:
-        return "pink";
+        return "soil2.png";
       case 3:
-        return "orange";
+        return "soil3.png";
       case 4:
-        return "yellow";
+        return "soil4.png";
       case 5:
-        return "green";
+        return "soil5.png";
       default:
-        return "gray";
+        return "soil0.png";
     }
   };
 
@@ -57,17 +59,36 @@ const Grid = ({
             return {
               ...tile,
               compactness: newCompactness,
-              color: getColorByCompactness(newCompactness),
+              img: getImageByCompactness(newCompactness),
             };
           }
           return tile;
         })
       );
+      setVisitedTiles((prev) => new Set(prev).add(`${row}-${col}`));
 
       return newGrid;
     });
     setVehiclePosition({ row, col });
   };
+
+  useEffect(() => {
+    const totalTiles = rows * cols;
+    let compactedTiles = 0;
+    grid.forEach((row) => {
+      row.forEach((tile) => {
+        if (tile.compactness === 5) {
+          compactedTiles++;
+        }
+      });
+    });
+
+    const visitedCount = visitedTiles.size;
+    const percentageComplete = (compactedTiles / totalTiles) * 100;
+
+    // Update progress data in the parent component
+    setProgressData({ visitedCount, percentageComplete });
+  }, [grid, visitedTiles, rows, cols, setProgressData]);
 
   // Handle moving the vehicle with WASD keys
   const handleKeyDown = (e) => {
@@ -76,10 +97,10 @@ const Grid = ({
     let newCol = col;
 
     // Update vehicle position based on WASD keys
-    if (e.key === "w" && newRow > 0) newRow = row - 1; // Move up (W key)
-    if (e.key === "s" && newRow < rows - 1) newRow = row + 1; // Move down (S key)
-    if (e.key === "a" && newCol > 0) newCol = col - 1; // Move left (A key)
-    if (e.key === "d" && newCol < cols - 1) newCol = col + 1; // Move right (D key)
+    if (e.key === "w" && newRow > 0) newRow = row - 1;
+    if (e.key === "s" && newRow < rows - 1) newRow = row + 1;
+    if (e.key === "a" && newCol > 0) newCol = col - 1;
+    if (e.key === "d" && newCol < cols - 1) newCol = col + 1;
 
     // Update the tile and compactness when the vehicle moves over it
     updateTile(newRow, newCol);
@@ -129,7 +150,11 @@ const Grid = ({
             <div
               key={colIndex}
               className="tile"
-              style={{ backgroundColor: tile.color }}
+              style={{
+                backgroundImage: `url(/${tile.img})`,
+                backgroundSize: "contain",
+                backgroundPosition: "center",
+              }}
             >
               {/* Only render the vehicle in the current position */}
               {vehiclePosition.row === rowIndex &&
@@ -151,6 +176,17 @@ const Grid = ({
       ))}
     </div>
   );
+};
+
+Grid.propTypes = {
+  rows: PropTypes.number.isRequired,
+  cols: PropTypes.number.isRequired,
+  onTileChange: PropTypes.func,
+  accelData: PropTypes.number.isRequired,
+  setAccelData: PropTypes.func.isRequired,
+  setAccelStatus: PropTypes.func.isRequired,
+  setGpsStatus: PropTypes.func.isRequired,
+  setProgressData: PropTypes.func.isRequired,
 };
 
 export default Grid;

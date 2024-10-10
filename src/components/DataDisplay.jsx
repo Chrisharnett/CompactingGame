@@ -1,6 +1,6 @@
-import React from "react";
-import { Container } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const DataDisplay = ({
   compactness,
@@ -9,8 +9,8 @@ const DataDisplay = ({
   accelStatus,
   gpsStatus,
 }) => {
-  const [accelId, setAccelId] = useState("CHACCEL1");
-  const [gpsId, setGpsId] = useState("CHGPS1");
+  const [accelId] = useState("HARNETTACCEL1");
+  const [gpsId] = useState("HARNETTGPS1");
 
   const statusDisplay = (status) => {
     switch (status) {
@@ -25,35 +25,63 @@ const DataDisplay = ({
 
   return (
     <>
-      <Container>
-        <h4>Accelerometer ID: {accelId} </h4>
-      </Container>
-      <Container>
-        Accelerometer Status:{" "}
-        <span style={{ color: statusDisplay(accelStatus).color }}>
-          {statusDisplay(accelStatus).text}
-        </span>
-      </Container>
-      <Container>Data: {accelData.toFixed(2)}</Container>
-      <Container>Ground density: {compactness}</Container>
-      <Container>
-        <h4>GPS Sensor ID: {gpsId}</h4>
-      </Container>
-      <Container>
-        GPS Status:{" "}
-        <span style={{ color: statusDisplay(gpsStatus).color }}>
-          {statusDisplay(gpsStatus).text}
-        </span>
-      </Container>
+      <Row>
+        <Col sm={12} md={6}>
+          <Container>
+            <h4>Accelerometer ID:</h4>
+            <p>{accelId}</p>
+          </Container>
+          <Container>
+            Status:{" "}
+            <span style={{ color: statusDisplay(accelStatus).color }}>
+              {statusDisplay(accelStatus).text}
+            </span>
+          </Container>
+          <Container>
+            <hr></hr>Data: {accelData.toFixed(2)}
+          </Container>
+          <Container>
+            <hr></hr>Ground density: {compactness}
+          </Container>
+        </Col>
+        <Col sm={12} md={6}>
+          <Container>
+            <h5>GPS Sensor ID:</h5>
+            <p>{gpsId}</p>
+          </Container>
 
-      <Container>
-        <p>GPS location</p>
-        <p> lng: {gps?.lng} </p>
-        <p>lat:{gps?.lat}</p>
-        <p>alt: {gps?.alt}</p>
-      </Container>
+          <Container>
+            Status:{" "}
+            <span style={{ color: statusDisplay(gpsStatus).color }}>
+              {statusDisplay(gpsStatus).text}
+            </span>
+          </Container>
+
+          <Container>
+            <hr></hr>
+            <h5>GPS location</h5>
+            <p className="ps-4">lng: {gps?.lng}</p>
+            <p className="ps-4">lat:{gps?.lat}</p>
+            <p className="ps-4">alt: {gps?.alt}</p>
+          </Container>
+        </Col>
+      </Row>
     </>
   );
+};
+
+DataDisplay.propTypes = {
+  compactness: PropTypes.number,
+  accelData: PropTypes.number.isRequired,
+  gps: PropTypes.shape({
+    lng: PropTypes.number,
+    lat: PropTypes.number,
+    alt: PropTypes.number,
+  }),
+  accelStatus: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
+    .isRequired,
+  gpsStatus: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
+    .isRequired,
 };
 
 export default DataDisplay;
